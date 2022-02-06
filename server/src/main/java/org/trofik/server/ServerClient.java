@@ -88,12 +88,14 @@ public class ServerClient extends Thread {
                             try {
                                 loanBank = new LoanBank((Admin) user);
                             } catch (Exception e) {
+                                System.err.println("LoanBank:");
                                 e.printStackTrace();
                             }
 
                             try {
                                 savingBank = new SavingBank((Admin) user);
                             } catch (Exception e) {
+                                System.err.println("SavingBank:");
                                 e.printStackTrace();
                             }
                         } else {
@@ -224,16 +226,21 @@ public class ServerClient extends Thread {
                         break;
                     case "!createLBank":
                     case "!createSBank":
-                        String[] aboutBank = clientMessage[1].split("\\s+", 3);
+                        String[] aboutBank = clientMessage[1].split("\\s+", 4);
 
                         try {
                             if (clientMessage[0].equals("!createLBank")) {
+                                assert loanBank == null;
                                 loanBank = new LoanBank(aboutBank[3], aboutBank[0], Float.parseFloat(aboutBank[1]),
                                         Long.parseLong(aboutBank[2]) * 86_400_000L);
+                                loanBank.save((Admin) user);
                             } else {
+                                assert savingBank == null;
                                 savingBank = new SavingBank(aboutBank[3], aboutBank[0], Float.parseFloat(aboutBank[1]),
                                         Long.parseLong(aboutBank[2]) * 86_400_000L);
+                                savingBank.save((Admin) user);
                             }
+                            sendMessage(outStream, "!info@Created...");
                         } catch (Exception e) {
                             e.printStackTrace();
                             sendMessage(outStream, "!info@Sorry, bad connection or you write incorrect data");
@@ -243,10 +250,14 @@ public class ServerClient extends Thread {
                         try {
                             if (loanBank != null) {
                                 loanBank.addCurrency(Currency.valueOf(clientMessage[1].toUpperCase()));
+                                loanBank.save((Admin) user
+                                );
                             }
                             if (savingBank != null) {
                                 savingBank.addCurrency(Currency.valueOf(clientMessage[1].toUpperCase()));
+                                savingBank.save((Admin) user);
                             }
+                            sendMessage(outStream, "!info@Added...");
                         } catch (Exception e) {
                             e.printStackTrace();
                             sendMessage(outStream, "!info@Sorry, bad connection or you write incorrect data");
