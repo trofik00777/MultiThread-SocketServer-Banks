@@ -23,8 +23,8 @@ public class Client {
             Map.entry("!makePayment", "!makePayment"),
             Map.entry("!takeMoney", "!takeMoney"),
             Map.entry("!createLBank", "!createLBank"),
-            Map.entry("!createSBank", "!createSBank")
-
+            Map.entry("!createSBank", "!createSBank"),
+            Map.entry("!addCurr", "!addCurr")
     );
 
     public static void main(String[] args) {
@@ -53,6 +53,7 @@ public class Client {
                     case "!takeMoney":
                     case "!createLBank":
                     case "!createSBank":
+                    case "!addCurr":
                         System.out.println(serverMessage[1]);
                         String clientAnswer = cmdReader.readLine().strip();
                         outStream.writeUTF(CONVERT_TO_ANSWER_LABEL.get(serverMessage[0]) + "@" + clientAnswer);

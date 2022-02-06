@@ -19,7 +19,8 @@ public class ServerClient extends Thread {
             1, "Get info about your banks",
             2, "Create new 'Loan' bank",
             3, "Create new 'Saving' bank",
-            4, "Exit"
+            4, "Add currency",
+            5, "Exit"
     );
 
     Map<Integer, String> CLIENT_MENU = Map.of(
@@ -146,6 +147,9 @@ public class ServerClient extends Thread {
                                     }
                                     break;
                                 case 4:
+                                    sendMessage(outStream, "!addCurr@Please write Rubles/Dollar/Euros");
+                                    break;
+                                case 5:
                                     sendMessage(outStream, "!stop@Bye");
                                     break;
                             }
@@ -234,6 +238,20 @@ public class ServerClient extends Thread {
                             e.printStackTrace();
                             sendMessage(outStream, "!info@Sorry, bad connection or you write incorrect data");
                         }
+                        break;
+                    case "!addCurr":
+                        try {
+                            if (loanBank != null) {
+                                loanBank.addCurrency(Currency.valueOf(clientMessage[1].toUpperCase()));
+                            }
+                            if (savingBank != null) {
+                                savingBank.addCurrency(Currency.valueOf(clientMessage[1].toUpperCase()));
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            sendMessage(outStream, "!info@Sorry, bad connection or you write incorrect data");
+                        }
+                        break;
                 }
             }
 
