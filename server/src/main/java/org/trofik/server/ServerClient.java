@@ -7,6 +7,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
 
@@ -75,7 +76,13 @@ public class ServerClient extends Thread {
                     case "!enterLoginPassword":
                         String[] logPassw = clientMessage[1].split("\\s+");
                         if (isAdmin) {
-                            user = new Admin(logPassw[0], logPassw[1]);
+                            try {
+                                user = new Admin(logPassw[0], logPassw[1]);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                sendMessage(outStream, "!stop@Sorry, bad connection or login/password is incorrect");
+                                break;
+                            }
 
                             try {
                                 loanBank = new LoanBank((Admin) user);
@@ -89,19 +96,30 @@ public class ServerClient extends Thread {
                                 e.printStackTrace();
                             }
                         } else {
-                            user = new Client(logPassw[0], logPassw[1]);
+                            try {
+                                user = new Client(logPassw[0], logPassw[1]);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                sendMessage(outStream, "!stop@Sorry, bad connection or login/password is incorrect");
+                                break;
+                            }
                         }
                         printMainMenu(outStream, isAdmin);
                         break;
                     case "!enterForRegister":
                         String[] data = clientMessage[1].split("\\s+");
+                        try {
 
-                        if (isAdmin) {
-                            user = new Admin(data[0], data[1], data[2], data[3]);
-                        } else {
-                            user = new Client(data[0], data[1], data[2], data[3]);
+                            if (isAdmin) {
+                                user = new Admin(data[0], data[1], data[2], data[3]);
+                            } else {
+                                user = new Client(data[0], data[1], data[2], data[3]);
+                            }
+                            printMainMenu(outStream, isAdmin);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            sendMessage(outStream, "!stop@Sorry, bad connection or login is already used");
                         }
-                        printMainMenu(outStream, isAdmin);
                         break;
                     case "!menuMode":
                         int modeNo = Integer.parseInt(clientMessage[1]);
@@ -116,7 +134,7 @@ public class ServerClient extends Thread {
                                     if (loanBank != null) {
                                         sendMessage(outStream, "!info@You already have 'Loan' bank");
                                     } else {
-                                        sendMessage(outStream, "!createLBank@Write 'name country loanInterestRate'");
+                                        sendMessage(outStream, "!createLBank@Write 'country loanInterestRate DaysForLoan name'");
                                     }
                                     break;
                                 case 3:
@@ -124,7 +142,7 @@ public class ServerClient extends Thread {
 
                                         sendMessage(outStream, "!info@You already have 'Saving' bank");
                                     } else {
-                                        sendMessage(outStream, "!createSBank@Write 'name country saveInterestRate'");
+                                        sendMessage(outStream, "!createSBank@Write 'country saveInterestRate DaysForSave name'");
                                     }
                                     break;
                                 case 4:
@@ -137,11 +155,85 @@ public class ServerClient extends Thread {
                                     sendMessage(outStream, "!info@" + user.getInfo());
                                     break;
                                 case 2:
-                                    sendMessage(outStream, "!takeLoan@Please write 'sumLoan currency{R, U, E}'");
+                                    sendMessage(outStream, "!takeLoan@Please write " +
+                                            "'sumLoan currency{Rubles, Dollar, Euros} nameBank'");
                                     break;
+                                case 3:
+                                    sendMessage(outStream, "!createDeposit@Please write " +
+                                            "'sumToSave currency{Rubles, Dollar, Euros} nameBank'");
+                                    break;
+                                case 4:
+                                    sendMessage(outStream, "!makePayment@Please write " +
+                                            "'sumToPay currency{Rubles, Dollar, Euros} nameBank'");
+                                    break;
+                                case 5:
+                                    sendMessage(outStream, "!takeMoney@Please write 'nameBank'");
+                                    break;
+                                case 6:
+                                    sendMessage(outStream, "!stop@Bye");
+                                    break;
+
                             }
                         }
                         break;
+                    case "!createDeposit":
+                    case "!takeLoan":
+                        String[] loan = clientMessage[1].split("\\s+", 3);
+                        try {
+                            LoanSaveInformation info;
+                            if (clientMessage[0].equals("!takeLoan")) {
+                                info = ((Client) user).takeLoan(loan[2],
+                                        new Money(Float.parseFloat(loan[0]),
+                                                Currency.valueOf(loan[1].toUpperCase())));
+                            } else {
+                                info = ((Client) user).giveMoneyForSaving(loan[2],
+                                        new Money(Float.parseFloat(loan[0]),
+                                                Currency.valueOf(loan[1].toUpperCase())));
+                            }
+                            assert info != null;
+                            sendMessage(outStream, "!info@" + info.toString());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            sendMessage(outStream, "!info@Sorry, bad connection or you have loan/save at this Bank...");
+                        }
+                        break;
+                    case "!makePayment":
+                    case "!takeMoney":
+                        String[] pay = clientMessage[1].split("\\s+", 3);
+                        try {
+                            if (clientMessage[0].equals("!makePayment")) {
+                                boolean info = ((Client) user).makePayment(pay[2],
+                                        new Money(Float.parseFloat(pay[0]),
+                                                Currency.valueOf(pay[1].toUpperCase())));
+                                assert info;
+                                sendMessage(outStream, "!info@Payment success");
+                            } else {
+                                Money info = ((Client) user).takeMoneyFromBank(pay[2]);
+
+                                assert info != null;
+                                sendMessage(outStream, "!info@" + info.toString());
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            sendMessage(outStream, "!info@Sorry, bad connection or you have loan/save at this Bank...");
+                        }
+                        break;
+                    case "!createLBank":
+                    case "!createSBank":
+                        String[] aboutBank = clientMessage[1].split("\\s+", 3);
+
+                        try {
+                            if (clientMessage[0].equals("!createLBank")) {
+                                loanBank = new LoanBank(aboutBank[3], aboutBank[0], Float.parseFloat(aboutBank[1]),
+                                        Long.parseLong(aboutBank[2]) * 86_400_000L);
+                            } else {
+                                savingBank = new SavingBank(aboutBank[3], aboutBank[0], Float.parseFloat(aboutBank[1]),
+                                        Long.parseLong(aboutBank[2]) * 86_400_000L);
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            sendMessage(outStream, "!info@Sorry, bad connection or you write incorrect data");
+                        }
                 }
             }
 

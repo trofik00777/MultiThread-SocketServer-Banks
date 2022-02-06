@@ -10,14 +10,21 @@ public class Client {
     static int PORT = 8080;
     static String HOST = "127.0.0.1";
 
-    static Map<String, String> CONVERT_TO_ANSWER_LABEL = Map.of(
-            "!welcome", "!enterMode",
-            "!enterAdminUser", "!enterAdminUser",
-            "!enterLoginPassword", "!enterLoginPassword",
-            "!enterForRegister", "!enterForRegister",
-            "!menu", "!menuMode",
-            "!info", "!menuMode",
-            "!createBank", "!menuMode"
+    static Map<String, String> CONVERT_TO_ANSWER_LABEL = Map.ofEntries(
+            Map.entry("!welcome", "!enterMode"),
+            Map.entry("!enterAdminUser", "!enterAdminUser"),
+            Map.entry("!enterLoginPassword", "!enterLoginPassword"),
+            Map.entry("!enterForRegister", "!enterForRegister"),
+            Map.entry("!menu", "!menuMode"),
+            Map.entry("!info", "!menuMode"),
+            Map.entry("!createBank", "!menuMode"),
+            Map.entry("!takeLoan", "!takeLoan"),
+            Map.entry("!createDeposit", "!createDeposit"),
+            Map.entry("!makePayment", "!makePayment"),
+            Map.entry("!takeMoney", "!takeMoney"),
+            Map.entry("!createLBank", "!createLBank"),
+            Map.entry("!createSBank", "!createSBank")
+
     );
 
     public static void main(String[] args) {
@@ -40,12 +47,20 @@ public class Client {
                     case "!menu":
                     case "!info":
                     case "!createBank":
+                    case "!takeLoan":
+                    case "!createDeposit":
+                    case "!makePayment":
+                    case "!takeMoney":
+                    case "!createLBank":
+                    case "!createSBank":
                         System.out.println(serverMessage[1]);
                         String clientAnswer = cmdReader.readLine().strip();
                         outStream.writeUTF(CONVERT_TO_ANSWER_LABEL.get(serverMessage[0]) + "@" + clientAnswer);
                         outStream.flush();
                         break;
-
+                    case "!stop":
+                        System.out.println(serverMessage[1]);
+                        return;
                 }
 
 //                System.out.println("Enter number :");
