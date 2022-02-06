@@ -116,7 +116,7 @@ public class ServerClient extends Thread {
                                     if (loanBank != null) {
                                         sendMessage(outStream, "!info@You already have 'Loan' bank");
                                     } else {
-                                        sendMessage(outStream, "!createBank@Write ''");
+                                        sendMessage(outStream, "!createLBank@Write 'name country loanInterestRate'");
                                     }
                                     break;
                                 case 3:
@@ -124,7 +124,7 @@ public class ServerClient extends Thread {
 
                                         sendMessage(outStream, "!info@You already have 'Saving' bank");
                                     } else {
-
+                                        sendMessage(outStream, "!createSBank@Write 'name country saveInterestRate'");
                                     }
                                     break;
                                 case 4:
@@ -134,9 +134,10 @@ public class ServerClient extends Thread {
                         } else {
                             switch (modeNo) {
                                 case 1:
-                                    System.out.println(user.getInfo());
+                                    sendMessage(outStream, "!info@" + user.getInfo());
                                     break;
                                 case 2:
+                                    sendMessage(outStream, "!takeLoan@Please write 'sumLoan currency{R, U, E}'");
                                     break;
                             }
                         }
