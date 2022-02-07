@@ -1,4 +1,4 @@
-# MultiThread-SocketServer-Banking-System
+# MultiThread-SocketServer-Banks
 
 ## About
 
